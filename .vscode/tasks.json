@@ -1,0 +1,31 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build Proj1",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-g",
+                "-o",
+                "SkipList",
+                "main.cpp"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Run Proj1",
+            "type": "shell",
+            "command": "${workspaceRoot}/binarytree",
+            "args": [],
+            "dependsOn": "Build Proj1",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        }
+    ]
+}
