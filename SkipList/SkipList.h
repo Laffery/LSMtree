@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <cstring>
 #include <stdlib.h>
 #include <time.h>
@@ -110,20 +111,6 @@ public:
 
         return hight;
     }
-
-    /* debug helpers */
-    void nmsl(){cout<<"nmsl\n";}
-
-    void awsl(){cout<<"awsl\n";}
-
-    void searchRes(K key) {
-        bool res = search(key);
-        
-        if(res)
-            cout <<"key " << key << " is found out!\n";
-        else
-            cout <<"key " << key << " is not in list\n";
-    }
 };
 
 template<typename K, typename V>
@@ -152,11 +139,9 @@ SkipList<K, V>::SkipList(int lv, float rate){
 template<typename K, typename V>
 Node<K, V> *SkipList<K, V>::searchNode(K key){
     Node<K, V> *curr = getLevel(header, level);
-    // cout << getHight(curr) << "___" << level<<endl;
     
     for(int i = level; i > 0; i--){
         K tmpkey = curr->succ->getKey();
-        // cout<<tmpkey << " : tmpkey\n";
         while (tmpkey < key)
         {
             /*  tmpkey != footKey <==> curr->succ != footer*/
@@ -207,28 +192,20 @@ void SkipList<K, V>::insertHelper(K key, V value, int addlv, Node<K, V> *before,
     changeLevel(addlv);
 
     while (addlv) {
-        // cout <<"addlv: "<<addlv<<"---------\n";
-        // cout << "before: "<<before->getKey()<<" after: "<<after->getKey()<<endl;
         helper->pred = before;
         before->succ = helper;
         helper->succ = after;
         after->pred  = helper;
-        // cout << "before: "<<helper->pred->getKey()<<" after: "<<helper->succ->getKey()<<endl;
 
         addlv--;
         if(!addlv)
             break;
 
-        while(before->above == nullptr){
-            // nmsl();
+        while(before->above == nullptr)
             before = before->pred;
-        }
 
-        while(after->above == nullptr){
-            // awsl();
+        while(after->above == nullptr)
             after = after->succ;
-        }
-        // cout << "before: "<<before->getKey()<<" after: "<<after->getKey()<<endl;
 
         Node<K, V> *subHlper = new Node<K, V>(helper);
         helper = subHlper;
@@ -238,8 +215,6 @@ void SkipList<K, V>::insertHelper(K key, V value, int addlv, Node<K, V> *before,
 
     count++;
     cout << "key " << key <<" successfully insert!\n";
-    traverse();
-    cout <<endl;
 }
 
 template<typename K, typename V>
@@ -251,27 +226,25 @@ void SkipList<K, V>::insert(K key, V value) {
     }
 
     if(isEmpty()){
-        cout << "first insert!\n";
-        insertHelper(key, value, 8, header, footer);
+        insertHelper(key, value, addlv, header, footer);
         return;
     }
 
     Node<K, V> *curr = getLevel(header, level);
-
 
     for(int i = level - 1; i >= 0; i--){
         K tmpkey = curr->succ->getKey();
 
         while (tmpkey < key)
         {
-            /*  tmpkey != footKey <==> curr->succ != footer*/
+            /* tmpkey != footKey <==> curr->succ != footer*/
             curr = curr->succ;
             tmpkey = curr->succ->getKey();
         }
         
         /* <==> curr->succ->key >= key && curr->key < key */
         if(tmpkey == key){ /* find it! */
-            cout << key << " has already existed!\n";
+            // cout << key << " has already existed!\n";
             return;
         }
         
@@ -296,12 +269,10 @@ void SkipList<K, V>::remove(K key) {
 
     Node<K, V> *target = searchNode(key);
     if(target == nullptr){
-        cout << "key " <<key<< " does not exist!\n";
+        // cout << "key " <<key<< " does not exist!\n";
         return;
     }
     
-    cout <<"hight is :" <<getLayer(target)<<endl;
-
     /* now we are on the bottom of target tower */
     Node<K, V> *helper = target->above;
     while (target != nullptr)
@@ -318,8 +289,6 @@ void SkipList<K, V>::remove(K key) {
 
     count--;
     cout <<"key " << key <<" Delete Successly!" <<endl;
-    traverse();
-    cout <<endl;
 }
 
 template<typename K, typename V>
@@ -336,7 +305,7 @@ void SkipList<K, V>::traverse(){
         cout << curr->getKey() << " : ";
 
         for(int i = getLayer(curr); i > 0; --i)
-            cout << ' '<< i << ' ';
+            cout << ' '<< i;
 
         cout <<endl;
         curr = curr->succ;

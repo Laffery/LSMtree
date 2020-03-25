@@ -6,18 +6,21 @@ int main(){
 
     SkipList<int,int> list(20, 0.5);
 
-    list.insert(1, 3);
-    list.searchRes(1);
-
     srand(time(nullptr));
 
-    for(int i = 0; i < 40; ++i)
-        list.insert(rand()%40, i*2);
+    for(int i = 0; i < 800; ++i)
+        list.insert(rand()%800, i*2);
 
+    list.traverse();
 
     cout<< "***********remove test***********\n\n\n";
-    for(int i = 0; i <= 40; ++i)
+    for(int i = 0; i <= 400; ++i)
         list.remove(i);
+
+    list.traverse();
+
+    for(int i = 400; i < 800; ++i)
+        cout <<"search "<<i <<" is "<<list.search(i)<<endl;
 
     cout << "test is finished ...." << endl;
     return 0;
