@@ -11,17 +11,18 @@
  * or will feedback with error: "Undefined reference to 'xxx'".
  * 2020.3.25 debug:
  * bugs in func: insert,remove,free
+ * 2020.3.29 update:
+ * class template changed to one typename, which is suitble to entry
  */
 
 using namespace std;
 
-#define headKey -10000
-#define footKey  10000
-
-template<typename K, typename V>
+template <typename K, typename V>
 class SkipList 
 {   
 private:
+    K headKey = -32768;
+    K footKey = 32767;
     Node<K, V> *header = nullptr;
     Node<K, V> *footer = nullptr;
 
@@ -33,6 +34,8 @@ private:
 public:
     SkipList(int lv, float rate);
 
+    SkipList(int lv, float rate, K hKey, K fKey);
+
     ~SkipList() {freeList();}
     
     Node<K, V> *searchNode(K key);
@@ -41,9 +44,9 @@ public:
 
     int RandomLevel();
 
-    void insertHelper(K key, V value, int addlv, Node<K, V> *before, Node<K, V> *after);
+    void insertHelper(K key, V val, int addlv, Node<K, V> *before, Node<K, V> *after);
 
-    void insert(K key, V value);
+    void insert(K key, V val);
 
     void remove(K key);
     
@@ -113,7 +116,7 @@ public:
     }
 };
 
-template<typename K, typename V>
+template <typename K, typename V>
 SkipList<K, V>::SkipList(int lv, float rate){
     this->maxlv = lv;
     this->p = rate;
@@ -136,7 +139,33 @@ SkipList<K, V>::SkipList(int lv, float rate){
     }
 }
 
-template<typename K, typename V>
+template <typename K, typename V>
+SkipList<K, V>::SkipList(int lv, float rate, K hKey, K fKey){
+    headKey = hKey;
+    footKey = fKey;
+    this->maxlv = lv;
+    this->p = rate;
+
+    srand(time(nullptr));
+
+    header = new Node<K, V>(headKey, 0);
+    footer = new Node<K, V>(footKey, 0);
+    
+    Node<K, V> *head = header;
+    Node<K, V> *foot = footer;
+    
+    for(int i = 1; i < maxlv; ++i){
+        Node<K, V> *addHead = new Node<K, V>(head);
+        Node<K, V> *addFoot = new Node<K, V>(foot);
+        addHead->succ = addFoot;
+        addFoot->pred = addHead;
+
+        head = addHead;
+        foot = addFoot;
+    }
+}
+
+template <typename K, typename V>
 Node<K, V> *SkipList<K, V>::searchNode(K key){
     Node<K, V> *curr = getLevel(header, level);
     
@@ -160,7 +189,7 @@ Node<K, V> *SkipList<K, V>::searchNode(K key){
     return nullptr;
 }
 
-template<typename K, typename V>
+template <typename K, typename V>
 bool SkipList<K, V>::search(K key){
     if(isEmpty()){
         cout << "The list is empty!\n";
@@ -170,7 +199,7 @@ bool SkipList<K, V>::search(K key){
     return searchNode(key) != nullptr;
 }
 
-template<typename K, typename V>
+template <typename K, typename V>
 int SkipList<K, V>::RandomLevel(){
     int addlv = 0;
 
@@ -184,11 +213,11 @@ int SkipList<K, V>::RandomLevel(){
     return addlv;
 }
 
-template<typename K, typename V>
-void SkipList<K, V>::insertHelper(K key, V value, int addlv, Node<K, V> *before, Node<K, V> *after)
+template <typename K, typename V>
+void SkipList<K, V>::insertHelper(K key, V val, int addlv, Node<K, V> *before, Node<K, V> *after)
 {
     cout<<"\ninsert :"<< key << "; randlv: " <<addlv <<endl;
-    Node<K, V> *helper = new Node<K, V>(key, value);
+    Node<K, V> *helper = new Node<K, V>(key, val);
     changeLevel(addlv);
 
     while (addlv) {
@@ -217,8 +246,8 @@ void SkipList<K, V>::insertHelper(K key, V value, int addlv, Node<K, V> *before,
     cout << "key " << key <<" successfully insert!\n";
 }
 
-template<typename K, typename V>
-void SkipList<K, V>::insert(K key, V value) {
+template <typename K, typename V>
+void SkipList<K, V>::insert(K key, V val) {
     int addlv = RandomLevel();
     if(!addlv || addlv > maxlv){
         cout <<"key " << key << " unluckily can't grow!\n";
@@ -226,7 +255,7 @@ void SkipList<K, V>::insert(K key, V value) {
     }
 
     if(isEmpty()){
-        insertHelper(key, value, addlv, header, footer);
+        insertHelper(key, val, addlv, header, footer);
         return;
     }
 
@@ -257,10 +286,10 @@ void SkipList<K, V>::insert(K key, V value) {
     Node<K, V> *before = curr;
     Node<K, V> *after = curr->succ;
 
-    insertHelper(key, value, addlv, before, after);
+    insertHelper(key, val, addlv, before, after);
 }
 
-template<typename K, typename V>
+template <typename K, typename V>
 void SkipList<K, V>::remove(K key) {
     if(isEmpty()){
         cout <<"The list is empty!\n";
@@ -291,7 +320,7 @@ void SkipList<K, V>::remove(K key) {
     cout <<"key " << key <<" Delete Successly!" <<endl;
 }
 
-template<typename K, typename V>
+template <typename K, typename V>
 void SkipList<K, V>::traverse(){
     if(isEmpty()){
         cout << "The list is empty!\n";
@@ -312,7 +341,7 @@ void SkipList<K, V>::traverse(){
     }
 }
 
-template<typename K, typename V>
+template <typename K, typename V>
 void SkipList<K, V>::freeList(){
     Node<K, V> *curr = header;
     Node<K, V> *helper = curr->succ;
@@ -329,7 +358,7 @@ void SkipList<K, V>::freeList(){
     count = 0;
 }
 
-template<typename K, typename V>
+template <typename K, typename V>
 void SkipList<K, V>::freeTower(Node<K, V> *base){
     Node<K, V> *curr = base;
     Node<K, V> *helper = curr->above;

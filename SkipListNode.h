@@ -1,36 +1,33 @@
 #ifndef SKIPLISTNODE_H
 #define SKIPLISTNODE_H
+#include "entry.h"
 
 template <typename K, typename V>
 class Node
 {
-private:
-    K key;
-    V val = 0;
-
 public:
+    Entry<K, V> entry;
+
     Node<K, V> *succ = nullptr;
     Node<K, V> *pred = nullptr;
     Node<K, V> *above = nullptr;
     Node<K, V> *below = nullptr;
 
-    Node() {}
-
-    Node(K k, V v) : key(k), val(v) {}
+    Node(K k, V v) {
+        entry = new Entry<K, V>(k, v);
+    }
     
-    Node(Node* base){
+    Node(Node* base) {
         this->below = base;
         base->above = this;
-
-        this->key = base->key;
-        this->val = base->val;
+        this->entry = base->entry;
     }
 
     ~Node() {}
 
-    K getKey() const {return key;}
-
-    V getVal() const {return val;}
+    K getKey() const {
+        return entry.key;
+    }
 };
 
 #endif // SkipListNode_h

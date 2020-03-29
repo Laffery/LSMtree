@@ -14,6 +14,7 @@ Explanation of each handout file:
 ├── README.md // This readme file
 ├── correctness.cc // Correctness test, you should not modify this file
 ├── data      // Data directory used in our test
+├── SkipList.h  // My implementation of a simple skip list
 ├── kvstore.cc     // your implementation
 ├── kvstore.h      // your implementation
 ├── kvstore_api.h  // KVStoreAPI, you should not modify this file

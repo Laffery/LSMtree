@@ -1,11 +1,17 @@
 #pragma once
 
 #include "kvstore_api.h"
+#include "entry.h"
+
+#define LSM_LEVEL 5
+
 
 class KVStore : public KVStoreAPI {
 	// You can add your implementation here
 private:
-
+	std::string _directory;
+	
+	void compaction();
 public:
 	KVStore(const std::string &dir);
 

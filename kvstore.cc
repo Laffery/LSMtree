@@ -3,6 +3,7 @@
 
 KVStore::KVStore(const std::string &dir): KVStoreAPI(dir)
 {
+	dir = _directory;
 }
 
 KVStore::~KVStore()

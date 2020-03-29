@@ -4,12 +4,13 @@ int main(){
 
     cout << "test is starting ....." << endl;
 
-    SkipList<int,int> list(20, 0.5);
+    SkipList<int, int> list(20, 0.5);
 
     srand(time(nullptr));
 
-    for(int i = 0; i < 800; ++i)
+    for(int i = 0; i < 800; ++i){
         list.insert(rand()%800, i*2);
+    }
 
     list.traverse();
 
@@ -19,7 +20,7 @@ int main(){
 
     list.traverse();
 
-    for(int i = 400; i < 800; ++i)
+    for(int i = 0; i < 800; ++i)
         cout <<"search "<<i <<" is "<<list.search(i)<<endl;
 
     cout << "test is finished ...." << endl;
