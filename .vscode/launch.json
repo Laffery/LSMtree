@@ -5,13 +5,12 @@
             "name": "Debug Proj1",
             "type": "cppdbg",
             "request": "launch",
-            // "targetArchitecture": "x64",
-            "program": "${workspaceRoot}/main",
+            "program": "${workspaceRoot}/${fileBasenameNoExtension}.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceRoot}",
             "environment": [],
-            "externalConsole": true,
+            "externalConsole": false,
             "linux": {
                 "MIMode": "gdb"
             },

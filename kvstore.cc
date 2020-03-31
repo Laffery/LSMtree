@@ -1,21 +1,27 @@
-#include "kvstore.h"
-#include <string>
+// #include "kvstore.h"
 
-KVStore::KVStore(const std::string &dir): KVStoreAPI(dir)
+KVStore::KVStore(const string &dir): KVStoreAPI(dir)
 {
-	dir = _directory;
+	dir_ = dir;
+	mem  = new MemTable(MEM_MAX_SIZE);
+	// disc = new disk();
 }
 
 KVStore::~KVStore()
 {
+	// delete disc;
 }
 
 /**
  * Insert/Update the key-value pair.
  * No return values for simplicity.
  */
-void KVStore::put(uint64_t key, const std::string &s)
+void KVStore::put(uint64_t key, const string &s)
 {
+	memtable.insert(key, s);
+	if(memtable->size() == MEM_MAX_SIZE)
+		compaction();
+	return;
 }
 /**
  * Returns the (string) value of the given key.
@@ -40,4 +46,11 @@ bool KVStore::del(uint64_t key)
  */
 void KVStore::reset()
 {
+	return;
+}
+
+
+void KVStore::compaction()
+{
+	return;
 }

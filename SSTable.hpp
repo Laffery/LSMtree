@@ -1,13 +1,11 @@
 #pragma once
 
-#include <set>
-#include "entry.h"
+#include "entry.hpp"
 
 class sstable
 {
 private:
     uint64_t MAX_SIZE;
-    set<entry<uint64_t, uint64_t>> index;
 
 public:
     sstable(uint64_t size);

@@ -12,11 +12,9 @@ private:
 
 public:
     disk_level(int lv) : level(lv){
-        table = new sstable[level];
+        tables = new sstable[2 * lv];
     }
     ~disk_level(){
-        for(int i = 0; i < level; ++ i)
-            tables[i].freetable();
         delete []tables;
     }
-}
+};

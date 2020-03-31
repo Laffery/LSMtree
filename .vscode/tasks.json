@@ -8,8 +8,8 @@
             "args": [
                 "-g",
                 "-o",
-                "SkipList",
-                "main.cpp"
+                "kvstore",
+                "correctness.cc"
             ],
             "group": {
                 "kind": "build",
@@ -19,7 +19,7 @@
         {
             "label": "Run Proj1",
             "type": "shell",
-            "command": "${workspaceRoot}/binarytree",
+            "command": "${workspaceRoot}/${fileBasenameNoExtension}",
             "args": [],
             "dependsOn": "Build Proj1",
             "group": {

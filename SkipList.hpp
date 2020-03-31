@@ -1,9 +1,14 @@
+#pragma once
+
+#ifndef SKIPLIST_HPP
+#define SKIPLIST_HPP
+
 #include <iostream>
 #include <fstream>
 #include <cstring>
 #include <stdlib.h>
 #include <time.h>
-#include "SkipListNode.h"
+#include "SkipListNode.hpp"
 
 /* 
  * 2020.3.24 debug:
@@ -12,8 +17,12 @@
  * 2020.3.25 debug:
  * bugs in func: insert,remove,free
  * 2020.3.29 update:
- * class template changed to one typename, which is suitble to entry
+ * api supports to typename entry
+ * 2020.3.31 update:
+ * initial function and recreate function to support memtable
  */
+
+typedef std::string V;
 
 using namespace std;
 
@@ -23,20 +32,45 @@ class SkipList
 private:
     K headKey = -32768;
     K footKey = 32767;
-    Node<K, V> *header = nullptr;
-    Node<K, V> *footer = nullptr;
+    V defVal;
+    Node<K, V> *header;
+    Node<K, V> *footer;
 
-    float p   = 0; // grow rate
+    float p   = 0.5; // grow rate
     int count = 0; // number of nodes
-    int maxlv = 0; // max level
+    int maxlv = 8; // max level
     int level = 0; // current max level (except header and footer)
 
 public:
-    SkipList(int lv, float rate);
+    SkipList(){}
 
-    SkipList(int lv, float rate, K hKey, K fKey);
+    SkipList(int lv, float rate) {init_argc_2(lv, rate);}
+
+    SkipList(int lv, float rate, K hKey, K fKey) : headKey(hKey), footKey(fKey){
+        init_argc_2(lv, rate);
+    }
 
     ~SkipList() {freeList();}
+
+    void init_lv_rate(int lv, float rate){
+        this->maxlv = lv;
+        this->p = rate;
+    }
+
+    void init_argc_0();
+
+    void init_argc_2(int lv, float rate);
+
+    void init_handle(int lv, float rate, K hKey, K fKey, V defV){
+        init_lv_rate(lv, rate);
+        this->headKey = hKey;
+        this->footKey = fKey;
+        this->defVal  = defV;
+
+        init_argc_0();
+    }
+
+    void recreate(int lv, float rate);
     
     Node<K, V> *searchNode(K key);
 
@@ -59,6 +93,10 @@ public:
     bool isEmpty() const {return count == 0;}
 
     int size() const {return count;}
+
+    int getRate() const {return p;}
+
+    int getMaxlevel() const {return maxlv;}
 
     int getlevel() const {return level;}
 
@@ -117,13 +155,12 @@ public:
 };
 
 template <typename K, typename V>
-SkipList<K, V>::SkipList(int lv, float rate){
-    this->maxlv = lv;
-    this->p = rate;
+void SkipList<K, V>::init_argc_0(){
     srand(time(nullptr));
 
-    header = new Node<K, V>(headKey, 0);
-    footer = new Node<K, V>(footKey, 0);
+    header = new Node<K, V>(headKey, defVal);
+    footer = new Node<K, V>(footKey, defVal);
+    
     
     Node<K, V> *head = header;
     Node<K, V> *foot = footer;
@@ -140,29 +177,45 @@ SkipList<K, V>::SkipList(int lv, float rate){
 }
 
 template <typename K, typename V>
-SkipList<K, V>::SkipList(int lv, float rate, K hKey, K fKey){
-    headKey = hKey;
-    footKey = fKey;
-    this->maxlv = lv;
+void SkipList<K, V>::init_argc_2(int lv, float rate){
+    init_lv_rate(lv, rate);
+    init_argc_0();
+}
+
+template <typename K, typename V>
+void SkipList<K, V>::recreate(int lv, float rate){
     this->p = rate;
-
-    srand(time(nullptr));
-
-    header = new Node<K, V>(headKey, 0);
-    footer = new Node<K, V>(footKey, 0);
+    if(lv == maxlv || lv <= 0)
+        return;
     
-    Node<K, V> *head = header;
-    Node<K, V> *foot = footer;
-    
-    for(int i = 1; i < maxlv; ++i){
-        Node<K, V> *addHead = new Node<K, V>(head);
-        Node<K, V> *addFoot = new Node<K, V>(foot);
-        addHead->succ = addFoot;
-        addFoot->pred = addHead;
+    Node<K, V> *head = getTop(header);
+    Node<K, V> *foot = getTop(footer);
 
-        head = addHead;
-        foot = addFoot;
+    if(lv > maxlv){
+        for(int i = maxlv; i < lv; ++i){
+            Node<K, V> *addHead = new Node<K, V>(head);
+            Node<K, V> *addFoot = new Node<K, V>(foot);
+            addHead->succ = addFoot;
+            addFoot->pred = addHead;
+
+            head = addHead;
+            foot = addFoot;
+        }
     }
+
+    else
+    {   Node<K, V> *headHelper = head->below;
+        Node<K, V> *footHelper = foot->below;
+        for(int i = lv; i < maxlv; ++i){
+            
+            delete head;
+            delete foot;
+            headHelper = headHelper->below;
+            footHelper = footHelper->below;
+        }
+    }
+    
+    this->maxlv = lv;
 }
 
 template <typename K, typename V>
@@ -216,7 +269,7 @@ int SkipList<K, V>::RandomLevel(){
 template <typename K, typename V>
 void SkipList<K, V>::insertHelper(K key, V val, int addlv, Node<K, V> *before, Node<K, V> *after)
 {
-    cout<<"\ninsert :"<< key << "; randlv: " <<addlv <<endl;
+    // cout<<"\ninsert :"<< key << "; randlv: " <<addlv <<endl;
     Node<K, V> *helper = new Node<K, V>(key, val);
     changeLevel(addlv);
 
@@ -243,14 +296,14 @@ void SkipList<K, V>::insertHelper(K key, V val, int addlv, Node<K, V> *before, N
     }
 
     count++;
-    cout << "key " << key <<" successfully insert!\n";
+    // cout << "key " << key <<" successfully insert!\n";
 }
 
 template <typename K, typename V>
 void SkipList<K, V>::insert(K key, V val) {
     int addlv = RandomLevel();
     if(!addlv || addlv > maxlv){
-        cout <<"key " << key << " unluckily can't grow!\n";
+        // cout <<"key " << key << " unluckily can't grow!\n";
         return;
     }
 
@@ -332,11 +385,8 @@ void SkipList<K, V>::traverse(){
 
     while(curr != nullptr){
         cout << curr->getKey() << " : ";
-
-        for(int i = getLayer(curr); i > 0; --i)
-            cout << ' '<< i;
-
-        cout <<endl;
+        cout << curr->getVal() << " : ";
+        cout << getLayer(curr) <<endl;
         curr = curr->succ;
     }
 }
@@ -373,3 +423,5 @@ void SkipList<K, V>::freeTower(Node<K, V> *base){
     /* helper == nullptr <==> curr->above == nullptr */
     delete curr;
 }
+
+#endif //SkipList.hpp
