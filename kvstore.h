@@ -42,7 +42,7 @@ KVStore::KVStore(const string &dir): KVStoreAPI(dir)
 
 KVStore::~KVStore()
 {
-	// delete mem;
+	delete mem;
 	// delete disc;
 }
 
@@ -52,10 +52,9 @@ KVStore::~KVStore()
  */
 void KVStore::put(uint64_t key, const string &s)
 {
-	// mem->put(key, s);
-	// if(mem->IS_FULL())
+	mem->PUT(key, s);
+	if(mem->IS_FULL())
 		compaction();
-	return;
 }
 /**
  * Returns the (string) value of the given key.
@@ -63,7 +62,7 @@ void KVStore::put(uint64_t key, const string &s)
  */
 std::string KVStore::get(uint64_t key)
 {
-	return "";
+	return mem->GET(key);
 }
 /**
  * Delete the given key-value pair if it exists.

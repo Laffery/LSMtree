@@ -1,24 +1,41 @@
 #pragma once
 
-#include "disk_lv.h"
+#ifndef DISK_HPP
+#define DISK_HPP
+
+#include "SSLevel.hpp"
 
 #define LSM_DEPTH 5
 
 class disk
 {
 private:
-    disk_level **level;
+    string dir;
+    int depth = LSM_DEPTH;
+    SSLevel *levels;
 
 public:
-    disk(){
-        **level = new disk_level*[LSM_DEPTH];
+    disk(){}
 
-        for(int i = 0; i < LSM_DEPTH; ++i)
-            level[i] = new disk_level(i+1);
+    disk(string path, int deep) : dir(path), depth(deep){
+        levels = new SSLevel[depth];
+
+        for(int i = 0; i < depth; ++i){
+            // cout << dir << "C" << to_string(i) << "/\n";
+            levels[i].SET_LEVEL(i);
+            levels[i].SET_DIR_PATH(dir + "C" + to_string(i) + "/");
+        }
     }
+
     ~disk(){
-        for(int i = 0; i < LSM_DEPTH; ++i)
-            delete []level[i];
-        delete []level;
+        delete []levels;
+    }
+
+public:
+
+    void WRITE_TO_LEVEL(int n){
+        levels[n].WRITE_TO_SST(1);
     }
 };
+
+#endif // disk_hpp

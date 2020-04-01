@@ -3,9 +3,9 @@
 #ifndef SKIPLIST_HPP
 #define SKIPLIST_HPP
 
+#include <map>
 #include <iostream>
-#include <fstream>
-#include <cstring>
+// #include <cstring>
 #include <stdlib.h>
 #include <time.h>
 #include "SkipListNode.hpp"
@@ -20,9 +20,11 @@
  * api supports to typename entry
  * 2020.3.31 update:
  * initial function and recreate function to support memtable
+ * 2020.4.1 update:
+ * add function select all kv-pair into a map
  */
 
-typedef std::string V;
+// typedef std::string V;
 
 using namespace std;
 
@@ -85,6 +87,8 @@ public:
     void remove(K key);
     
     void traverse();
+
+    map<K, V> SELECT_TO_MAP();
 
     void freeList();
 
@@ -345,7 +349,7 @@ void SkipList<K, V>::insert(K key, V val) {
 template <typename K, typename V>
 void SkipList<K, V>::remove(K key) {
     if(isEmpty()){
-        cout <<"The list is empty!\n";
+        // cout <<"The list is empty!\n";
         return;
     }
 
@@ -370,17 +374,17 @@ void SkipList<K, V>::remove(K key) {
     }
 
     count--;
-    cout <<"key " << key <<" Delete Successly!" <<endl;
+    // cout <<"key " << key <<" Delete Successly!" <<endl;
 }
 
 template <typename K, typename V>
 void SkipList<K, V>::traverse(){
     if(isEmpty()){
-        cout << "The list is empty!\n";
+        // cout << "The list is empty!\n";
         return;
     }
     
-    cout << "*******SkipListDisplay*******"<<endl;
+    // cout << "*******SkipListDisplay*******"<<endl;
     Node<K, V> *curr = header;
 
     while(curr != nullptr){
@@ -389,6 +393,19 @@ void SkipList<K, V>::traverse(){
         cout << getLayer(curr) <<endl;
         curr = curr->succ;
     }
+}
+
+template <typename K, typename V>
+map<K, V> SkipList<K, V>::SELECT_TO_MAP(){
+    map<K, V> KVmap;
+    Node<K, V> *curr = header->succ;
+
+    while(curr != footer){
+        KVmap.insert(pair<K, V>(curr->getKey(), curr->getVal()));
+        curr = curr->succ;
+    }
+
+    return KVmap;
 }
 
 template <typename K, typename V>

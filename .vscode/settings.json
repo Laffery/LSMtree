@@ -12,6 +12,7 @@
         "iosfwd": "cpp",
         "charconv": "cpp",
         "xiosbase": "cpp",
-        "xmemory": "cpp"
+        "xmemory": "cpp",
+        "map": "cpp"
     }
 }

@@ -1,8 +1,10 @@
-#include "SkipList.hpp"
 #include "MemTable.hpp"
+#include "SSTable.hpp"
+#include "SSLevel.hpp"
+#include "disk.hpp"
+#include <map>
 #include <string>
 #include <iostream>
-#include <io.h>
 
 using namespace std;
 
@@ -10,9 +12,8 @@ void SkipListTest(int levelsize, float rate, int num){
     SkipList<int, char> list;
     list.init_handle(15, 0.5, -32768, 32767, 0);
 
-    for(int i = 0; i < num; ++i){
+    for(int i = 0; i < num; ++i)
         list.insert(rand()%num, 'k');
-    }
 
     list.traverse();
 
@@ -31,35 +32,55 @@ void SkipListTest(int levelsize, float rate, int num){
 void memTableTest(int size, uint64_t num){
     MemTable mem(size);
 
-    cout<<"nmdl\n";
     string str("K");
-    for(uint64_t i = 0; i < num; ++i){
+    for(uint64_t i = 0; i < num; ++i)
         mem.PUT((uint64_t)rand()%num, str);
-    }
-
-    cout<< "***********remove test***********\n";
 
     for(uint64_t i = 0; i <= num/2; ++i)
         mem.DELETE(i);
 
-    mem.TRAVERSE();
+    // mem.TRAVERSE();
 
-    cout<< "***********search test***********\n";
+    // cout<< "***********search test***********\n";
     for(uint64_t i = 0; i < num; ++i)
-        cout <<"search "<< i <<" result : "<< mem.SEARCH(i) << endl;
+        cout <<"search "<< i <<" result : "<< mem.GET(i) << endl;
+
+    map<uint64_t, string> mem_map = mem.IMM_MEMTABLE();
+    
+    map<uint64_t, string>::iterator iter; 
+  
+    for(iter = mem_map.begin(); iter != mem_map.end(); iter++)  
+  
+       cout<<iter->first<<' '<<iter->second<<endl; 
+    
 }
 
-void fileTest(){
-    ofstream outfile("./demo/A/");//声明一个写文件流对象outfile并打开文件
-    if(!outfile){//检查是否打开成功
-        cout << "Failed to create file...\n";
-        exit(0);
+void SSTtest(){  
+  
+    map<uint64_t, string> mapStudent;  
+  
+    for(uint64_t i = 0; i < 1002; ++i){
+        mapStudent.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i))); 
     }
-    outfile << "Create a file!\n";//向文件写数据
-    outfile.close();//关闭文件
-    remove("./demo/B.txt");
-    rename("./demo/C.txt", "./demo/E.txt");
-    cout << "test is finished ...." << endl;
+  
+    map<uint64_t, string>::iterator iter;   
+
+    SSTable sst("./demo/B.txt");
+    sst.WRITE_TO_DIR(mapStudent);
+    // sst.SHOW_INDEX();
+    cout << sst.GET(0) <<endl;
+}
+
+void levelTest(int n){
+    SSLevel lv("./data/C3", n);
+    lv.WRITE_TO_SST(3);
+    return;
+}
+
+void diskTest(){
+    disk disc("./data/", 5);
+    disc.WRITE_TO_LEVEL(4);
+    return;
 }
 
 int main(){
@@ -70,11 +91,16 @@ int main(){
     
     // fileTest();
 
-    memTableTest(1024, 3000);
+    // memTableTest(1024, 300);
+
+    // SSTtest();
+
+    // levelTest(1);
+
+    diskTest();
 
     cout << "test is finished ......" << endl;
     
     return 0;
 }
-
 

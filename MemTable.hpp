@@ -21,7 +21,6 @@ private:
     
 public:
     MemTable(uint64_t size) : max_size(size){
-        cout <<"hshas\n";
         string str("key of head/foot");
         list.init_handle(mem_maxlv, mem_rate, 0, UINT64_MAX, str);
     }
@@ -36,7 +35,13 @@ public:
     }
 
     string GET(const uint64_t key){
-        return list.searchNode(key)->getVal();
+        Node<uint64_t, string> *target;
+        target = list.searchNode(key);
+        return (target == nullptr) ? "" : target->getVal();
+    }
+
+    map<uint64_t, string> IMM_MEMTABLE(){
+        return list.SELECT_TO_MAP();
     }
 
     bool SEARCH(const uint64_t key){
