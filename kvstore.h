@@ -1,13 +1,17 @@
 #pragma once
 
+#ifndef KVSTORE_H
+#define KVSTORE_H
+
 #include <string>
 #include "kvstore_api.h"
 #include "MemTable.hpp"
 #include "SkipList.hpp"
-// #include "disk_lv.hpp"
-// #include "disk.hpp"
+#include "SSLevel.hpp"
+#include "disk.hpp"
 
 #define MEM_MAX_SIZE 1024
+#define LSM_DEPTH 5
 
 using namespace std;
 
@@ -16,9 +20,8 @@ class KVStore : public KVStoreAPI
 private:
 	string dir_;
 	MemTable *mem;
-	// disk *disc;
+	disk disc;
 	
-	void compaction();
 public:
 	KVStore(const string &dir);
 
@@ -31,19 +34,22 @@ public:
 	bool del(uint64_t key) override;
 
 	void reset() override;
+	
+	void compaction();
 };
 
 KVStore::KVStore(const string &dir): KVStoreAPI(dir)
 {
 	dir_ = dir;
 	mem  = new MemTable(MEM_MAX_SIZE);
-	// disc = new disk();
+	disc.SET_DEPTH(LSM_DEPTH);
+	disc.SET_DIR_PATH(dir_);
 }
 
 KVStore::~KVStore()
 {
 	delete mem;
-	// delete disc;
+	disc.FREE_DISK();
 }
 
 /**
@@ -79,11 +85,13 @@ bool KVStore::del(uint64_t key)
  */
 void KVStore::reset()
 {
-	return;
+	mem->MEM_RESET();
+	disc.DISK_RESET();
 }
-
 
 void KVStore::compaction()
 {
 	return;
 }
+
+#endif // kvstore_h

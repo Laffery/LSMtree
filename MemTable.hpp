@@ -60,6 +60,10 @@ public:
         list.freeList();
     }
 
+    void MEM_RESET(){
+        list.reset();
+    }
+
     bool IS_FULL() const {
         return list.size() == max_size;
     }

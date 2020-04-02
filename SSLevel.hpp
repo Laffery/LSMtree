@@ -44,7 +44,7 @@ public:
         dir = path;
         for(int i = 0; i < sstables; ++i){
             tables[i].SET_DIR_PATH(dir + "sstable" + to_string(i) + ".txt");
-            cout <<dir << "sstable" << to_string(i) << ".txt\n";
+            // cout <<dir << "sstable" << to_string(i) << ".txt\n";
         }
     }
 
@@ -58,6 +58,11 @@ public:
         tables[n].WRITE_TO_DIR(mapStudent);
 
             cout << tables[n].GET_SCALE_MAX()<<endl;
+    }
+
+    void LEVEL_RESET(){
+        for(int i = 0; i < sstables; ++i)
+            tables[i].RESET();
     }
 };
 

@@ -5,36 +5,52 @@
 
 #include "SSLevel.hpp"
 
-#define LSM_DEPTH 5
-
 class disk
 {
 private:
     string dir;
-    int depth = LSM_DEPTH;
+    int depth = 5;
     SSLevel *levels;
 
 public:
     disk(){}
 
-    disk(string path, int deep) : dir(path), depth(deep){
-        levels = new SSLevel[depth];
+    disk(string path, int deep){
+        SET_DEPTH(deep);
+        SET_DIR_PATH(path);
+    }
 
+    ~disk(){
+        FREE_DISK();
+    }
+
+public:
+
+    void SET_DEPTH(int deep){
+        depth = deep;
+        levels = new SSLevel[depth];
+    }
+
+    void SET_DIR_PATH(const string path){
+        dir = path;
         for(int i = 0; i < depth; ++i){
-            // cout << dir << "C" << to_string(i) << "/\n";
             levels[i].SET_LEVEL(i);
             levels[i].SET_DIR_PATH(dir + "C" + to_string(i) + "/");
         }
     }
 
-    ~disk(){
+    void WRITE_TO_LEVEL(int n){
+        levels[n].WRITE_TO_SST(1);
+    }
+
+    void FREE_DISK(){
         delete []levels;
     }
 
-public:
-
-    void WRITE_TO_LEVEL(int n){
-        levels[n].WRITE_TO_SST(1);
+    void DISK_RESET(){
+        for(int i = 0; i < depth; ++i){
+            levels[i].LEVEL_RESET();
+        }
     }
 };
 

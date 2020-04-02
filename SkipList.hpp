@@ -73,6 +73,8 @@ public:
     }
 
     void recreate(int lv, float rate);
+
+public:
     
     Node<K, V> *searchNode(K key);
 
@@ -93,6 +95,10 @@ public:
     void freeList();
 
     void freeTower(Node<K, V> *base);
+
+    void reset();
+
+public:
     
     bool isEmpty() const {return count == 0;}
 
@@ -107,6 +113,7 @@ public:
     void changeLevel(int tmplv) {level = (level > tmplv) ? level : tmplv;}
 
 public:
+
     Node<K, V> *getTop(Node<K, V> *ptr) const {
         Node<K, V> *curr = ptr;
         while(curr->above != nullptr)
@@ -439,6 +446,33 @@ void SkipList<K, V>::freeTower(Node<K, V> *base){
 
     /* helper == nullptr <==> curr->above == nullptr */
     delete curr;
+}
+
+template <typename K, typename V>
+void SkipList<K, V>::reset(){
+    Node<K, V> *curr = header->succ;
+    Node<K, V> *helper = curr->succ;
+
+    if(helper == nullptr)
+        return;
+
+    while (helper != nullptr)
+    {   
+        freeTower(curr);
+        curr   = helper;
+        helper = helper->succ;
+    }
+
+    /* curr is footer */
+    Node<K, V> *headHelper = header;
+    Node<K, V> *footHelper = footer;
+    while(headHelper != nullptr){
+        headHelper->succ = footHelper;
+        footHelper->pred = headHelper;
+        headHelper = headHelper->above;
+        footHelper = footHelper->above;
+    }
+    count = 0;
 }
 
 #endif //SkipList.hpp

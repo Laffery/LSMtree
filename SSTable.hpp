@@ -124,6 +124,13 @@ public:
         infile.close();
         return res;
     }
+
+    void RESET(){
+        min_key = UINT64_MAX;
+        max_key = 0;
+        index.clear();
+        max_offset = 0;
+    }
 };
 
 #endif // SSTable_hpp
