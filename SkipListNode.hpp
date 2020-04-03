@@ -26,14 +26,12 @@ public:
     }
 
     ~Node() {}
-
-    void setKV(K k, V v){
-        this->entry.key = k;
-        this->entry.val = v;
-    }
     
     K getKey() const {return entry.key;}
     V getVal() const {return entry.val;}
+    void setKey(K k) {this->entry.key = k;}
+    void setVal(V v) {this->entry.val = v;}
+    void setKV(K k, V v) {setKey(k);setVal(v);}
 };
 
 #endif // SkipListNode_hpp

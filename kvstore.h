@@ -76,7 +76,12 @@ std::string KVStore::get(uint64_t key)
  */
 bool KVStore::del(uint64_t key)
 {
-	return false;
+	if(mem->SEARCH(key)){
+		mem->DELETE(key);
+		return true;
+	}
+	else
+		return false;
 }
 
 /**

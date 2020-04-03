@@ -5,10 +5,11 @@
 
 #include <map>
 #include <iostream>
-// #include <cstring>
 #include <stdlib.h>
 #include <time.h>
 #include "SkipListNode.hpp"
+
+using namespace std;
 
 /* 
  * 2020.3.24 debug:
@@ -22,11 +23,9 @@
  * initial function and recreate function to support memtable
  * 2020.4.1 update:
  * add function select all kv-pair into a map
+ * 2020.4.3 update:
+ * when insert an existed key, just change its value
  */
-
-// typedef std::string V;
-
-using namespace std;
 
 template <typename K, typename V>
 class SkipList 
@@ -256,7 +255,7 @@ Node<K, V> *SkipList<K, V>::searchNode(K key){
 template <typename K, typename V>
 bool SkipList<K, V>::search(K key){
     if(isEmpty()){
-        cout << "The list is empty!\n";
+        // cout << "The list is empty!\n";
         return false;
     }
 
@@ -338,6 +337,12 @@ void SkipList<K, V>::insert(K key, V val) {
         /* <==> curr->succ->key >= key && curr->key < key */
         if(tmpkey == key){ /* find it! */
             // cout << key << " has already existed!\n";
+            // change value
+            curr = curr->succ;
+            while(curr != nullptr){
+                curr->setVal(val);
+                curr = curr->below;
+            }
             return;
         }
         
