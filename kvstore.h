@@ -9,8 +9,9 @@
 #include "SkipList.hpp"
 #include "SSLevel.hpp"
 #include "disk.hpp"
+#include "log.hpp"
 
-#define MEM_MAX_SIZE 1024
+#define MEM_MAX_SIZE 1024 * 64
 #define LSM_DEPTH 5
 
 using namespace std;
@@ -21,6 +22,7 @@ private:
 	string dir_;
 	MemTable *mem;
 	disk disc;
+	Log log;
 	
 public:
 	KVStore(const string &dir);
@@ -44,6 +46,7 @@ KVStore::KVStore(const string &dir): KVStoreAPI(dir)
 	mem  = new MemTable(MEM_MAX_SIZE);
 	disc.SET_DEPTH(LSM_DEPTH);
 	disc.SET_DIR_PATH(dir_);
+	log.SET_LOG_PATH(dir + "/my.log");
 }
 
 KVStore::~KVStore()
@@ -59,9 +62,10 @@ KVStore::~KVStore()
 void KVStore::put(uint64_t key, const string &s)
 {
 	mem->PUT(key, s);
-	if(mem->IS_FULL())
-		compaction();
+	// if(mem->IS_FULL())
+		// compaction();
 }
+
 /**
  * Returns the (string) value of the given key.
  * An empty string indicates not found.
@@ -70,6 +74,7 @@ std::string KVStore::get(uint64_t key)
 {
 	return mem->GET(key);
 }
+
 /**
  * Delete the given key-value pair if it exists.
  * Returns false iff the key is not found.

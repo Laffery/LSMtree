@@ -25,6 +25,8 @@ using namespace std;
  * add function select all kv-pair into a map
  * 2020.4.3 update:
  * when insert an existed key, just change its value
+ * 2020.4.4 debug:
+ * change origin value of random add level into 1, correctness passed
  */
 
 template <typename K, typename V>
@@ -264,7 +266,7 @@ bool SkipList<K, V>::search(K key){
 
 template <typename K, typename V>
 int SkipList<K, V>::RandomLevel(){
-    int addlv = 0;
+    int addlv = 1;
 
     float r = ((float)rand()/RAND_MAX);
 
@@ -273,7 +275,7 @@ int SkipList<K, V>::RandomLevel(){
         r = rand()/((float)RAND_MAX);
     }
 
-    return addlv;
+    return (addlv < maxlv) ? addlv : maxlv;
 }
 
 template <typename K, typename V>
@@ -312,10 +314,6 @@ void SkipList<K, V>::insertHelper(K key, V val, int addlv, Node<K, V> *before, N
 template <typename K, typename V>
 void SkipList<K, V>::insert(K key, V val) {
     int addlv = RandomLevel();
-    if(!addlv || addlv > maxlv){
-        // cout <<"key " << key << " unluckily can't grow!\n";
-        return;
-    }
 
     if(isEmpty()){
         insertHelper(key, val, addlv, header, footer);
@@ -336,7 +334,6 @@ void SkipList<K, V>::insert(K key, V val) {
         
         /* <==> curr->succ->key >= key && curr->key < key */
         if(tmpkey == key){ /* find it! */
-            // cout << key << " has already existed!\n";
             // change value
             curr = curr->succ;
             while(curr != nullptr){
@@ -360,16 +357,12 @@ void SkipList<K, V>::insert(K key, V val) {
 
 template <typename K, typename V>
 void SkipList<K, V>::remove(K key) {
-    if(isEmpty()){
-        // cout <<"The list is empty!\n";
+    if(isEmpty())
         return;
-    }
 
     Node<K, V> *target = searchNode(key);
-    if(target == nullptr){
-        // cout << "key " <<key<< " does not exist!\n";
+    if(target == nullptr)
         return;
-    }
     
     /* now we are on the bottom of target tower */
     Node<K, V> *helper = target->above;
@@ -386,17 +379,13 @@ void SkipList<K, V>::remove(K key) {
     }
 
     count--;
-    // cout <<"key " << key <<" Delete Successly!" <<endl;
 }
 
 template <typename K, typename V>
 void SkipList<K, V>::traverse(){
-    if(isEmpty()){
-        // cout << "The list is empty!\n";
+    if(isEmpty())
         return;
-    }
     
-    // cout << "*******SkipListDisplay*******"<<endl;
     Node<K, V> *curr = header;
 
     while(curr != nullptr){

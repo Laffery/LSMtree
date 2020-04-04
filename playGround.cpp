@@ -2,11 +2,14 @@
 #include "SSTable.hpp"
 #include "SSLevel.hpp"
 #include "disk.hpp"
+#include "log.hpp"
 #include <map>
 #include <string>
 #include <iostream>
+#include <ctime>
+#include <cstdio>
 
-using namespace std;
+using namespace std;    
 
 void SkipListTest(int levelsize, float rate, int num){
     SkipList<int, char> list;
@@ -83,6 +86,38 @@ void diskTest(){
     return;
 }
 
+void binFileTest(const string path){
+    ofstream fout(path, ios::binary | ios::app);
+    int nNum = 80;
+
+    string str("Hello,world");
+
+    fout.write((char*)&nNum, sizeof(int));
+
+    fout.write(str.c_str(), sizeof(char) * (str.size()));
+
+    fout.close();  
+
+    ifstream fin(path, ios::binary);
+    int num;  
+    char szBuf[256] = {0};
+
+    fin.read((char*)&num, sizeof(int));
+
+    fin.read(szBuf, sizeof(char)*256);
+
+    cout <<"int = "<<num<<endl;
+
+    cout <<"str = "<<szBuf<<endl;
+    fin.close();
+}
+
+void LogTest(const string path){
+    Log log(path);
+    log.REGARD('i', 65,"hahah");
+    log.REGARD('d', 65,"hahah");
+}
+
 int main(){
 
     cout << "test is starting ......" << endl;
@@ -97,8 +132,24 @@ int main(){
 
     // levelTest(1);
 
-    diskTest();
+    // diskTest();
 
+    // binFileTest("./data/my.log");
+
+    // time_t rawtime;
+    // struct tm *ptminfo;
+    clock_t start, finish;
+
+    start = clock();
+ 
+    LogTest("./data/my.log");
+
+    finish = clock();
+    cout <<start <<' ' << finish <<endl;
+    // time(&rawtime);
+    // ptminfo = localtime(&rawtime);
+    // printf("current: %02d-%02d-%02d %02d:%02d:%02d\n",
+    //         ptminfo->tm_year + 1900, ptminfo->tm_mon + 1, ptminfo->tm_mday,ptminfo->tm_hour, ptminfo->tm_min, ptminfo->tm_sec);
     cout << "test is finished ......" << endl;
     
     return 0;

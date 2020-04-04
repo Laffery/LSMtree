@@ -16,8 +16,12 @@
 ├── data           // Data directory used in our test
 ├── SkipList.hpp   // My implementation of a simple skip list
 ├── MemTable.hpp   // My implementation of a memory table basing on skip list
+├── SSTable.hpp    // implementation of sstable
+├── SSLevel.hpp    // level of disk containing several sstables
+├── disk.hpp       // containing several sslevels
+├── log.hpp        // implementation of a log system
 ├── kvstore.cc     // your implementation
-├── kvstore.h      // your implementation
+├── kvstore.h      // never used
 ├── kvstore_api.h  // KVStoreAPI, you should not modify this file
 ├── persistence.cc // Persistence test, you should not modify this file
 └── test.h         // Base class for testing, you should not modify this file
