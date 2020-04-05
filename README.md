@@ -19,7 +19,6 @@
 ├── SSTable.hpp    // implementation of sstable
 ├── SSLevel.hpp    // level of disk containing several sstables
 ├── disk.hpp       // containing several sslevels
-├── log.hpp        // implementation of a log system
 ├── kvstore.cc     // your implementation
 ├── kvstore.h      // never used
 ├── kvstore_api.h  // KVStoreAPI, you should not modify this file
