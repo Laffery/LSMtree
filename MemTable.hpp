@@ -9,19 +9,18 @@ using namespace std;
 
 #define MEM_MAX_LV 15
 #define MEM_RATE 0.5
-// #define MAX_SIZE 1024
 
 class MemTable
 {
 private:
-    int mem_maxlv = 15;
-    float mem_rate = 0.5;
+    int mem_maxlv = 25;
+    float mem_rate = 0.6;
     uint64_t max_size;
     SkipList<uint64_t, string> list;
     
 public:
     MemTable(uint64_t size) : max_size(size){
-        string str("key of head/foot");
+        string str("default");
         list.init_handle(mem_maxlv, mem_rate, 0, UINT64_MAX, str);
     }
 

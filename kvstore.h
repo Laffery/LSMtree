@@ -9,7 +9,7 @@
 #include "SkipList.hpp"
 #include "SSLevel.hpp"
 #include "disk.hpp"
-#include "log.hpp"
+// #include "log.hpp"
 
 #define MEM_MAX_SIZE 1024 * 64
 #define LSM_DEPTH 5
@@ -22,7 +22,6 @@ private:
 	string dir_;
 	MemTable *mem;
 	disk disc;
-	Log log;
 	
 public:
 	KVStore(const string &dir);
@@ -46,7 +45,6 @@ KVStore::KVStore(const string &dir): KVStoreAPI(dir)
 	mem  = new MemTable(MEM_MAX_SIZE);
 	disc.SET_DEPTH(LSM_DEPTH);
 	disc.SET_DIR_PATH(dir_);
-	log.SET_LOG_PATH(dir + "/my.log");
 }
 
 KVStore::~KVStore()
@@ -62,8 +60,8 @@ KVStore::~KVStore()
 void KVStore::put(uint64_t key, const string &s)
 {
 	mem->PUT(key, s);
-	// if(mem->IS_FULL())
-		// compaction();
+	if(mem->IS_FULL())
+		compaction();
 }
 
 /**
@@ -72,7 +70,12 @@ void KVStore::put(uint64_t key, const string &s)
  */
 std::string KVStore::get(uint64_t key)
 {
-	return mem->GET(key);
+	string res = mem->GET(key);
+	if(res != "")
+		return res;
+
+	res = disc.GET(key);
+	return res;
 }
 
 /**
@@ -85,8 +88,12 @@ bool KVStore::del(uint64_t key)
 		mem->DELETE(key);
 		return true;
 	}
-	else
-		return false;
+	else if(disc.GET(key) != ""){
+		mem->PUT(key, "");
+		return true;
+	}
+	
+	return false;
 }
 
 /**
@@ -101,7 +108,10 @@ void KVStore::reset()
 
 void KVStore::compaction()
 {
-	return;
+	// MAP_DATA imm_mem = mem->IMM_MEMTABLE();
+
+	if(disc.GET_LEVEL_SST(0) == 0)
+		return;
 }
 
 #endif // kvstore_h

@@ -9,7 +9,8 @@ class disk
 {
 private:
     string dir;
-    int depth = 5;
+    int depth = 0;
+    int depest = 5;
     SSLevel *levels;
 
 public:
@@ -27,20 +28,38 @@ public:
 public:
 
     void SET_DEPTH(int deep){
-        depth = deep;
-        levels = new SSLevel[depth];
+        depest = deep;
+        levels = new SSLevel[depest];
     }
 
     void SET_DIR_PATH(const string path){
         dir = path;
-        for(int i = 0; i < depth; ++i){
+        for(int i = 0; i < depest; ++i){
             levels[i].SET_LEVEL(i);
-            levels[i].SET_DIR_PATH(dir + "C" + to_string(i) + "/");
+            levels[i].SET_DIR_PATH(dir + "/C" + to_string(i) + "/");
         }
     }
 
+    int GET_DEPTH(){
+        return depth;
+    }
+
+    int GET_LEVEL_SST(int n){
+        return levels[n].GET_SIZE();
+    }
+
     void WRITE_TO_LEVEL(int n){
-        levels[n].WRITE_TO_SST(1);
+        // levels[n].WRITE_TO_SST(1);
+    }
+
+    string GET(uint64_t key){
+        for(int i = 0; i < depth; ++i){
+            string res = levels[i].GET(key);
+            if(res != "")
+                return res;
+        }
+        
+        return "";
     }
 
     void FREE_DISK(){

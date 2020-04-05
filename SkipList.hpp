@@ -33,15 +33,15 @@ template <typename K, typename V>
 class SkipList 
 {   
 private:
-    K headKey = -32768;
+    K headKey = -1;
     K footKey = 32767;
     V defVal;
     Node<K, V> *header;
     Node<K, V> *footer;
 
-    float p   = 0.5; // grow rate
+    float p   = 0.6; // grow rate
     int count = 0; // number of nodes
-    int maxlv = 8; // max level
+    int maxlv = 25; // max level
     int level = 0; // current max level (except header and footer)
 
 public:
