@@ -19,8 +19,7 @@
 ├── SSTable.hpp    // implementation of sstable
 ├── SSLevel.hpp    // level of disk containing several sstables
 ├── disk.hpp       // containing several sslevels
-├── kvstore.cc     // your implementation
-├── kvstore.h      // never used
+├── kvstore.h      // your implementation
 ├── kvstore_api.h  // KVStoreAPI, you should not modify this file
 ├── persistence.cc // Persistence test, you should not modify this file
 └── test.h         // Base class for testing, you should not modify this file
