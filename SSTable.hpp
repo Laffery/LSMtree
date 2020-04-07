@@ -25,6 +25,7 @@ private:
     uint64_t min_key  = UINT64_MAX;
     uint64_t max_key  = 0;
     uint64_t index_offset = 0;
+    MAP_INDEX imap;
 
 public:
     SSTable(){}
@@ -62,7 +63,7 @@ public:
         if(!outfile)
             return;
         
-        MAP_INDEX index;
+        // MAP_INDEX index;
         uint64_t offset = 0; // keys' offsets
         uint64_t key;
         string tmpdata = "";
@@ -72,7 +73,7 @@ public:
             min_key = (min_key < key) ? min_key : key;
             max_key = (max_key > key) ? max_key : key;
             
-            index.insert(pair<uint64_t, uint64_t>(key, offset));
+            imap.insert(pair<uint64_t, uint64_t>(key, offset));
 
             outfile.write((char*)&key, sizeof(uint64_t));
 
@@ -85,16 +86,16 @@ public:
             iter++;
             table.erase(tmp);
 
-            size += (sizeof(uint64_t) * 3 + tmpdata.size());
+            size += (sizeof(char) * tmpdata.size());
             if(size >= max_size)
                 break;
         }
 
         this->index_offset = offset;
 
-        MAP_INDEX::iterator it = index.begin();
+        MAP_INDEX::iterator it = imap.begin();
         uint64_t tmpkey, tmpoft;
-        while(it != index.end()){
+        while(it != imap.end()){
             tmpkey = it->first;
             tmpoft = it->second;
 
@@ -106,63 +107,33 @@ public:
         outfile.close();
     }
 
-    bool SEARCH(uint64_t key){
-        return SEARCH_OFFSET(key) != index_offset;
-    }
-
-    uint64_t SEARCH_OFFSET(uint64_t key){
-        if(key < min_key || key > max_key)
-            return index_offset;
-        
-        ifstream infile(dir, ios::binary);
-        char gps;
-        for(uint64_t i = 0; i < index_offset; ++i)
-            infile.read(&gps, 1);
-        
-        uint64_t tmpkey, tmpoft;
-        while(!infile.eof()){
-            infile.read((char*)&tmpkey, sizeof(uint64_t));
-            infile.read((char*)&tmpoft, sizeof(uint64_t));
-
-            if(tmpkey == key){
-                infile.close();
-                return tmpoft;
-            }
-        }
-        infile.close();
-        return index_offset;
-    }
-
-    string GET(uint64_t key){
+    string GET(uint64_t key, bool &flag){
+        flag = false;
         if(key < min_key || key > max_key)
             return "";
-        
-        ifstream infile(dir, ios::binary);
-        char gps;
-        for(uint64_t i = 0; i < index_offset; ++i)
-            infile.read(&gps, 1);
         
         uint64_t tmpkey, offset;
-        while(!infile.eof()){
-            infile.read((char*)&tmpkey, sizeof(uint64_t));
-            infile.read((char*)&offset, sizeof(uint64_t));
-
-            if(tmpkey == key)
-                break;
-        }
         
-        if(infile.eof()){
-            infile.close();
+        MAP_INDEX::iterator iter = imap.begin();
+        while (iter != imap.end())
+        {
+            if(iter->first == key)
+                break;
+            iter++;
+        }
+        if(iter == imap.end())
+            return "";
+        
+        offset = iter->second;
+        offset += sizeof(uint64_t);
+
+        iter++;
+        uint64_t nextoft = (iter == imap.end()) ? index_offset : iter->second;
+
+        if(nextoft == offset){
+            flag = true;
             return "";
         }
-
-        offset += sizeof(uint64_t);
-        uint64_t nextoft = index_offset;
-        if(key < max_key){
-            infile.read((char*)&nextoft, sizeof(uint64_t));
-            infile.read((char*)&nextoft, sizeof(uint64_t));
-        }
-        infile.close();
 
         ifstream kfile(dir, ios::binary);
         
@@ -178,28 +149,11 @@ public:
         }
         kfile.close();
 
+        flag = true;
         return res;
     }
 
     // compaction helpers
-    MAP_INDEX GET_INDEX_MAP(){
-        MAP_INDEX index;
-        ifstream infile(dir, ios::binary);
-        char gps;
-        for(uint64_t i = 0; i < index_offset; ++i)
-            infile.read(&gps, 1);
-        
-        uint64_t tmpkey, tmpoft;
-        while(!infile.eof()){
-            infile.read((char*)&tmpkey, sizeof(uint64_t));
-            infile.read((char*)&tmpoft, sizeof(uint64_t));
-            index.insert(pair<uint64_t, uint64_t>(tmpkey, tmpoft));
-        }
-        infile.close();
-
-        return index;
-    }
-
     void INDEX_TO_MAP(MAP_INDEX &index){
         ifstream infile(dir, ios::binary);
         char gps;
@@ -215,57 +169,8 @@ public:
         infile.close();
     }
 
-    MAP_DATA GET_KV_MAP(){
-        MAP_INDEX index = GET_INDEX_MAP();
-
-        MAP_DATA table;
-        MAP_INDEX::iterator iter = index.begin();
-        uint64_t offset, nextoft, key;
-        
-        ifstream infile(dir, ios::binary);
-
-        char ch;
-        string res = "";
-        uint64_t count = 0;
-
-        while(iter != index.end()){
-            infile.read((char*)&key, sizeof(uint64_t));
-            offset = sizeof(uint64_t) + iter->second;
-            iter++;
-            if(iter == index.end())
-                break;
-            
-            nextoft = iter->second;
-            
-            while(count < nextoft - offset){
-                infile.read(&ch, 1);
-                res.push_back(ch);
-                count++;
-            }
-
-            table.insert(pair<uint64_t, string>(key, res));
-            
-            res = "";
-            count = 0;
-        }
-
-        // last kv-pair
-        cout << index_offset <<":" <<offset<<endl;
-        while(count < index_offset - offset){
-            infile.read(&ch, 1);
-            res.push_back(ch);
-            count++;
-        }
-
-        table.insert(pair<uint64_t, string>(key, res));
-
-        infile.close();
-        return table;
-    }
-
     void KV_TO_MAP(MAP_DATA &table){
-        MAP_INDEX index = GET_INDEX_MAP();
-        MAP_INDEX::iterator iter = index.begin();
+        MAP_INDEX::iterator iter = imap.begin();
         uint64_t offset, nextoft, key;
         
         ifstream infile(dir, ios::binary);
@@ -274,11 +179,11 @@ public:
         string res = "";
         uint64_t count = 0;
 
-        while(iter != index.end()){
+        while(iter != imap.end()){
             infile.read((char*)&key, sizeof(uint64_t));
             offset = sizeof(uint64_t) + iter->second;
             iter++;
-            if(iter == index.end())
+            if(iter == imap.end())
                 break;
             
             nextoft = iter->second;
@@ -296,7 +201,6 @@ public:
         }
 
         // last kv-pair
-        // cout << index_offset <<":" <<offset<<endl;
         while(count < index_offset - offset){
             infile.read(&ch, 1);
             res.push_back(ch);
@@ -306,12 +210,15 @@ public:
         table.insert(pair<uint64_t, string>(key, res));
 
         infile.close();
+
+        RESET();
     }
 
     void RESET(){
         min_key = UINT64_MAX;
         max_key = 0;
         index_offset = 0;
+        imap.clear();
         remove(dir.c_str());
     }
 };

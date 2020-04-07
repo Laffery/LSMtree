@@ -27,6 +27,8 @@ using namespace std;
  * when insert an existed key, just change its value
  * 2020.4.4 debug:
  * change origin value of random add level into 1, correctness passed
+ * 2020.4.7 update:
+ * handle the problem that can't reset when list is empty
  */
 
 template <typename K, typename V>
@@ -97,7 +99,7 @@ public:
 
     void freeTower(Node<K, V> *base);
 
-    void reset();
+    void resetList();
 
 public:
     
@@ -443,12 +445,12 @@ void SkipList<K, V>::freeTower(Node<K, V> *base){
 }
 
 template <typename K, typename V>
-void SkipList<K, V>::reset(){
+void SkipList<K, V>::resetList(){
+    if(isEmpty())
+        return;
+
     Node<K, V> *curr = header->succ;
     Node<K, V> *helper = curr->succ;
-
-    if(helper == nullptr)
-        return;
 
     while (helper != nullptr)
     {   
@@ -467,6 +469,7 @@ void SkipList<K, V>::reset(){
         footHelper = footHelper->above;
     }
     count = 0;
+    level = 0;
 }
 
 #endif //SkipList.hpp

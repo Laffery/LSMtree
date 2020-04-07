@@ -20,62 +20,74 @@ void SkipListTest(int levelsize, float rate, int num){
     for(int i = 0; i < num; ++i)
         list.insert(rand()%num, 'k');
 
+    // list.traverse();
+
+    // cout<< "***********remove test***********\n";
+
+    // for(int i = 0; i <= num/2; ++i)
+    //     list.remove(i);
+
+    // list.traverse();
+
+    // cout<< "***********search test***********\n";
+    // for(int i = 0; i < num; ++i)
+    //     cout <<"search "<< i <<" result : "<< list.search(i) << endl;
+
+    // list.reset();
+    // list.insert(10000, 's');
+    // list.traverse();
+    map<int, char> table = list.SELECT_TO_MAP();
     list.traverse();
-
-    cout<< "***********remove test***********\n";
-
-    for(int i = 0; i <= num/2; ++i)
-        list.remove(i);
-
-    list.traverse();
-
-    cout<< "***********search test***********\n";
-    for(int i = 0; i < num; ++i)
-        cout <<"search "<< i <<" result : "<< list.search(i) << endl;
 }
 
-void memTableTest(int size, uint64_t num){
-    MemTable mem(size);
+void memTableTest(uint64_t num){
+    MemTable mem;
 
     string str("K");
     for(uint64_t i = 0; i < num; ++i)
         mem.PUT((uint64_t)rand()%num, str);
 
-    for(uint64_t i = 0; i <= num/2; ++i)
-        mem.DELETE(i);
+    // for(uint64_t i = 0; i <= num/2; ++i)
+    //     mem.DELETE(i);
 
     // mem.TRAVERSE();
 
     // cout<< "***********search test***********\n";
-    for(uint64_t i = 0; i < num; ++i)
-        cout <<"search "<< i <<" result : "<< mem.GET(i) << endl;
+    // for(uint64_t i = 0; i < num; ++i)
+    //     cout <<"search "<< i <<" result : "<< mem.GET(i) << endl;
 
     map<uint64_t, string> mem_map = mem.IMM_MEMTABLE();
     
-    map<uint64_t, string>::iterator iter; 
-  
-    for(iter = mem_map.begin(); iter != mem_map.end(); iter++)  
-        cout<<iter->first<<' '<<iter->second<<endl; 
-    
+    map<uint64_t, string>::iterator iter = mem_map.begin(); 
+
+    while(iter != mem_map.end()){  
+        cout<<iter->first<<' '<<iter->second<<endl;
+        iter++;
+    }
 }
 
 void SSTtest(){  
   
-    map<uint64_t, string> mapStudent;  
+    // map<uint64_t, string> mapStudent;  
   
-    for(uint64_t i = 0; i < 66666; ++i){
-        mapStudent.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i))); 
-    }
+    // for(uint64_t i = 0; i < 666; ++i){
+    //     mapStudent.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i))); 
+    // }
 
-    SSTable sst("sstable3.dat");
-    sst.WRITE_TO_DIR(mapStudent);
-    MAP_DATA::iterator iter = mapStudent.begin();
-    while(iter != mapStudent.end()){
-        cout <<iter->first <<": " << iter->second <<endl;
-        iter++;
+    SSTable sst("./data/C0/sstable0.dat");
+    // sst.WRITE_TO_DIR(mapStudent);
+    // MAP_DATA::iterator iter = mapStudent.begin();
+    // while(iter != mapStudent.end()){
+    //     cout <<iter->first <<": " << iter->second <<endl;
+    //     iter++;
+    // }
+    for(uint64_t i = 0; i < 8; ++i){
+        bool flag;
+        cout << sst.GET(i, flag) << endl;
     }
     // cout << sst.SEARCH(102) <<endl;
-    // cout << sst.GET(112) <<endl;
+    // bool flag;
+    // cout << sst.GET(112, flag) <<endl;
     // sst.RESET();
 
     // MAP_INDEX index = sst.GET_INDEX_MAP();
@@ -103,16 +115,16 @@ void levelTest(){
     map<uint64_t, string> mapStudent2;
     map<uint64_t, string> mapStudent3;
   
-    for(uint64_t i = 0; i < 102; ++i)
+    for(uint64_t i = 0; i < 300; ++i)
         mapStudent0.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i))); 
 
-    for(uint64_t i = 200; i < 302; ++i)
+    for(uint64_t i = 200; i < 500; ++i)
         mapStudent1.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i))); 
 
-    for(uint64_t i = 400; i < 502; ++i)
+    for(uint64_t i = 400; i < 500; ++i)
         mapStudent2.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i))); 
 
-    for(uint64_t i = 600; i < 702; ++i)
+    for(uint64_t i = 600; i < 700; ++i)
         mapStudent3.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i))); 
 
     SSLevel lv("./data/C1", 1);
@@ -121,29 +133,77 @@ void levelTest(){
     lv.WRITE_TO_SST(2, mapStudent2);
     lv.WRITE_TO_SST(3, mapStudent3);
 
+    bool flag;
     for(uint64_t i = 0; i < 800; i += 20)
-        cout << i << ": " << lv.GET(i) <<endl;
+        cout << i << ": " << lv.GET(i, flag) <<endl;
     return;
 }
 
 void diskTest(){
+    map<uint64_t, string> mapStudent0;
+    map<uint64_t, string> mapStudent1;
+    map<uint64_t, string> mapStudent2;
+    map<uint64_t, string> mapStudent3;
+  
+    for(uint64_t i = 0; i < 300; ++i)
+        mapStudent0.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i))); 
+
+    for(uint64_t i = 200; i < 500; ++i)
+        mapStudent1.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i))); 
+
+    for(uint64_t i = 400; i < 500; ++i)
+        mapStudent2.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i))); 
+
+    for(uint64_t i = 600; i < 700; ++i)
+        mapStudent3.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i)));
     disk disc("./data", 5);
-    // disc.WRITE_TO_LEVEL(4);
+    disc.WRITE_TO_SSL(2, mapStudent0);
+    disc.WRITE_TO_SSL(2, mapStudent1);
+    disc.WRITE_TO_SSL(2, mapStudent2);
+    disc.WRITE_TO_SSL(2, mapStudent3);
 }
 
-void kvstoreTest(){
-    KVStore("./data");
+void kvstoreTest(int max){
+    KVStore store("./data");
+    uint64_t i;
+    ofstream outf("log.txt", ios::out);
+
+    // outf << "get 1" << ": " << store.get(1) <<endl;
+	// store.put(1, "SE");
+    // outf << "get 1" << ": " << store.get(1) <<endl;
+	// outf << "del 1" << ": " << store.del(1) <<endl;
+    // outf << "get 1" << ": " << store.get(1) <<endl;
+    // outf << "del 1" << ": " << store.del(1) <<endl;
+
+	outf << "Test multiple key-value pairs\n";
+	for (i = 0; i < max; ++i) {
+	    store.put(i, std::string(i+1, 's'));
+		outf << "get " << i << ": " << store.get(i) <<endl;
+	}
+	
+	outf << "Test after all insertions\n";
+	for (i = 0; i < max; ++i)
+		outf <<"get" << i <<": "<<  store.get(i)<<endl;
+
+	outf << "Test deletions\n";
+	for (i = 0; i < max; i+=2)
+		outf << "del " << i << ": " << store.del(i) <<endl;
+
+	for (i = 0; i < max; ++i)
+		outf << "get " << i << ": " << store.get(i) <<endl;
+
+	for (i = 1; i < max; ++i)
+		outf << "del " << i << ": " << store.del(i)<<endl;
+    outf.close();
 }
 
 int main(){
 
     cout << "test is starting ......" << endl;
 
-    // SkipListTest(25, 0.85, 32600);
-    
-    // fileTest();
+    // SkipListTest(25, 0.85, 300);
 
-    // memTableTest(1024, 30000);
+    // memTableTest(300000);
 
     SSTtest();
 
@@ -151,7 +211,7 @@ int main(){
 
     // diskTest();
 
-    // kvstoreTest();
+    // kvstoreTest(2100);
 
     cout << "test is finished ......" << endl;
     

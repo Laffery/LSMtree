@@ -9,10 +9,8 @@
 #include "SkipList.hpp"
 #include "SSLevel.hpp"
 #include "disk.hpp"
-// #include "log.hpp"
 
-#define MEM_MAX_SIZE 1024 * 64
-#define LSM_DEPTH 5
+#define LSM_DEPTH 10
 
 using namespace std;
 
@@ -20,7 +18,7 @@ class KVStore : public KVStoreAPI
 {
 private:
 	string dir_;
-	MemTable *mem;
+	MemTable mem;
 	disk disc;
 	
 public:
@@ -36,21 +34,18 @@ public:
 
 	void reset() override;
 	
-	void compaction();
+	void compaction(uint64_t key);
 };
 
 KVStore::KVStore(const string &dir): KVStoreAPI(dir)
 {
 	dir_ = dir;
-	mem  = new MemTable(MEM_MAX_SIZE);
 	disc.SET_DEPTH(LSM_DEPTH);
-	disc.SET_DIR_PATH(dir_);
+	disc.SET_DIR_PATH(dir_ + "/");
 }
 
 KVStore::~KVStore()
 {
-	delete mem;
-	disc.FREE_DISK();
 }
 
 /**
@@ -59,9 +54,11 @@ KVStore::~KVStore()
  */
 void KVStore::put(uint64_t key, const string &s)
 {
-	mem->PUT(key, s);
-	if(mem->IS_FULL())
-		compaction();
+	mem.PUT(key, s);
+	if(mem.IS_FULL()){
+		// cout << key << "compactions!" << endl;
+		compaction(key);
+	}
 }
 
 /**
@@ -70,12 +67,18 @@ void KVStore::put(uint64_t key, const string &s)
  */
 std::string KVStore::get(uint64_t key)
 {
-	string res = mem->GET(key);
+	bool flag;
+	string res = mem.GET(key, flag);
 	if(res != "")
 		return res;
+	else {
+		// key exists but val is "": deleted
+		if(flag)
+			return "";
 
-	res = disc.GET(key);
-	return res;
+		res = disc.GET(key, flag);
+		return res;
+	}
 }
 
 /**
@@ -84,16 +87,32 @@ std::string KVStore::get(uint64_t key)
  */
 bool KVStore::del(uint64_t key)
 {
-	if(mem->SEARCH(key)){
-		mem->DELETE(key);
+	bool flag;
+	if(mem.GET(key, flag) != ""){
+		// cout << "type0 : " << key << " 1\n";
+		mem.DELETE(key);
 		return true;
 	}
-	else if(disc.GET(key) != ""){
-		mem->PUT(key, "");
-		return true;
+
+	if(flag){
+		// cout << "type1 : " << key << " 0\n";
+		return false;
 	}
 	
-	return false;
+	if(disc.GET(key, flag) != ""){
+		// cout << "type2 : " << key <<" 1\n";
+		mem.PUT(key, "");
+		return true;
+	}
+	else 
+	{
+		if(flag){
+			// cout << "type3 : " << key <<" 0\n";
+			return false;
+		}
+		// cout << "type4 : " << key <<" 0\n";
+		return false;
+	}
 }
 
 /**
@@ -102,16 +121,32 @@ bool KVStore::del(uint64_t key)
  */
 void KVStore::reset()
 {
-	mem->MEM_RESET();
+	mem.MEM_RESET();
 	disc.DISK_RESET();
 }
 
-void KVStore::compaction()
+void KVStore::compaction(uint64_t key)
 {
-	// MAP_DATA imm_mem = mem->IMM_MEMTABLE();
-
-	if(disc.GET_LEVEL_SST(0) == 0)
+	MAP_DATA imm_mem = mem.IMM_MEMTABLE();
+	
+	// minor compaction
+	int lvsize = disc.GET_LEVEL_SST(0);
+	if(lvsize < 2){
+		disc.WRITE_TO_LV0(imm_mem);
 		return;
+	}
+
+	// major compaction
+	// disc.LV_TO_MAP(0, imm_mem);
+	// if(key == 1121){
+	// 	cout << lvsize << "affa\n";
+	// MAP_DATA::iterator iter = imm_mem.begin();
+	// while(iter != imm_mem.end()){
+	// 	cout << iter->first <<endl;//<< iter->second << endl;
+	// 	iter++;
+	// }
+	// }
+	disc.WRITE_TO_LEVELS(imm_mem);
 }
 
 #endif // kvstore_h
