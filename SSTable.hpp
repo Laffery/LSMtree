@@ -7,8 +7,8 @@
 #include <string>
 #include <fstream>
 #include <iostream>
-#include "entry.hpp"
 #include <set>
+#include <io.h>
 
 using namespace std;
 
@@ -39,25 +39,45 @@ public:
 
     void SET_DIR_PATH(const string path){
         this->dir = path;
+
+        // if file existed, load its infomation
+        if(_access(dir.c_str(), 0) != -1){
+            ifstream infile(dir, ios::binary);
+            infile.seekg(-8, ios::end);
+            infile.read((char*)&index_offset, 8);
+
+            // load index map into memory
+            infile.seekg(index_offset, ios::beg);
+            uint64_t tmpkey, tmpofst;
+            while(!infile.eof()){
+                infile.read((char*)&tmpkey, 8);
+                infile.read((char*)&tmpofst, 8);
+
+                if(tmpkey == index_offset)
+                    break;
+
+                min_key = (min_key < tmpkey) ? min_key : tmpkey;
+                max_key = (max_key > tmpkey) ? max_key : tmpkey;
+
+                imap.insert(pair<uint64_t, uint64_t>(tmpkey, tmpofst));
+            }
+            infile.close();
+        }
     }
 
-    uint64_t GET_MIN_KEY(){
-        return min_key;
-    }
+    uint64_t GET_MIN_KEY(){ return min_key; }
 
-    uint64_t GET_MAX_KEY(){
-        return max_key;
-    }
+    uint64_t GET_MAX_KEY(){ return max_key; }
 
-    uint64_t GET_SIZE(){
-        return size;
-    }
+    uint64_t GET_SIZE(){ return size; }
 
-    uint64_t GET_MAX_SIZE(){
-        return max_size;
-    }
+    uint64_t GET_MAX_SIZE(){ return max_size; }
 
     void WRITE_TO_DIR(MAP_DATA &table){
+        min_key = UINT64_MAX;
+        max_key = 0;
+        index_offset = 0;
+        imap.clear();
         size = 0;
         ofstream outfile(dir, ios::binary);
         if(!outfile)
@@ -75,10 +95,10 @@ public:
             
             imap.insert(pair<uint64_t, uint64_t>(key, offset));
 
-            outfile.write((char*)&key, sizeof(uint64_t));
+            outfile.write((char*)&key, 8);
 
             tmpdata = iter->second;
-            offset = offset + sizeof(uint64_t) + tmpdata.length();
+            offset += (8 + tmpdata.length());
             
             outfile.write(tmpdata.c_str(), sizeof(char) * tmpdata.size());
 
@@ -86,24 +106,27 @@ public:
             iter++;
             table.erase(tmp);
 
+            // make sure the size of a sstable near 2 MB
             size += (sizeof(char) * tmpdata.size());
             if(size >= max_size)
                 break;
         }
 
         this->index_offset = offset;
-
+        
         MAP_INDEX::iterator it = imap.begin();
         uint64_t tmpkey, tmpoft;
         while(it != imap.end()){
             tmpkey = it->first;
             tmpoft = it->second;
 
-            outfile.write((char*)&tmpkey, sizeof(uint64_t));
-            outfile.write((char*)&tmpoft, sizeof(uint64_t));
+            outfile.write((char*)&tmpkey, 8);
+            outfile.write((char*)&tmpoft, 8);
 
             it++;
         }
+        
+        outfile.write((char*)&index_offset, 8);
         outfile.close();
     }
 
@@ -156,14 +179,13 @@ public:
     // compaction helpers
     void INDEX_TO_MAP(MAP_INDEX &index){
         ifstream infile(dir, ios::binary);
-        char gps;
-        for(uint64_t i = 0; i < index_offset; ++i)
-            infile.read(&gps, 1);
+        
+        infile.seekg(index_offset, ios::beg);
         
         uint64_t tmpkey, tmpoft;
         while(!infile.eof()){
-            infile.read((char*)&tmpkey, sizeof(uint64_t));
-            infile.read((char*)&tmpoft, sizeof(uint64_t));
+            infile.read((char*)&tmpkey, 8);
+            infile.read((char*)&tmpoft, 8);
             index.insert(pair<uint64_t, uint64_t>(tmpkey, tmpoft));
         }
         infile.close();
@@ -180,8 +202,8 @@ public:
         uint64_t count = 0;
 
         while(iter != imap.end()){
-            infile.read((char*)&key, sizeof(uint64_t));
-            offset = sizeof(uint64_t) + iter->second;
+            infile.read((char*)&key, 8);
+            offset = 8 + iter->second;
             iter++;
             if(iter == imap.end())
                 break;
@@ -218,8 +240,10 @@ public:
         min_key = UINT64_MAX;
         max_key = 0;
         index_offset = 0;
+        size = 0;
         imap.clear();
-        remove(dir.c_str());
+        if(_access(dir.c_str(), 0) == 0)
+            remove(dir.c_str());
     }
 };
 

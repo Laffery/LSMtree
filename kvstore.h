@@ -55,8 +55,9 @@ KVStore::~KVStore()
 void KVStore::put(uint64_t key, const string &s)
 {
 	mem.PUT(key, s);
-	if(mem.IS_FULL()){
-		// cout << key << "compactions!" << endl;
+	
+	if(mem.IS_FULL())
+	{
 		compaction(key);
 	}
 }

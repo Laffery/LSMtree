@@ -38,6 +38,8 @@ public:
         for(int i = 0; i < depest; ++i){
             levels[i].SET_LEVEL(i);
             levels[i].SET_DIR_PATH(dir + "C" + to_string(i) + "/");
+            if(!levels[i].GET_SIZE())
+                depth++;
         }
     }
 

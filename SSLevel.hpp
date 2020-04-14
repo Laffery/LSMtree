@@ -49,7 +49,15 @@ public:
         _mkdir(dir.c_str());
 
         for(int i = 0; i < sst_max; ++i){
-            tables[i].SET_DIR_PATH(dir + "/sstable" + to_string(i) + ".dat");
+            string sst_dir = dir + "/sstable" + to_string(i) + ".dat";
+            if(_access(sst_dir.c_str(), 0) == 0)
+                sst_size++;
+
+            tables[i].SET_DIR_PATH(sst_dir);
+            uint64_t min = tables[i].GET_MIN_KEY();
+            uint64_t max = tables[i].GET_MAX_KEY();
+            min_key = (min_key < min) ? min_key : min;
+            max_key = (max_key > max) ? max_key : max;
         }
     }
 

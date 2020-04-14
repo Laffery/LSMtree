@@ -4,10 +4,12 @@
 #include "disk.hpp"
 #include "kvstore.h"
 #include <map>
+#include <cstring>
 #include <string>
 #include <iostream>
 #include <ctime>
 #include <cstdio>
+#include <cassert>
 
 using namespace std;  
 typedef map<uint64_t, string> MAP_DATA;
@@ -66,7 +68,7 @@ void memTableTest(uint64_t num){
     }
 }
 
-void SSTtest(){  
+void SSTtest(uint64_t max){  
   
     // map<uint64_t, string> mapStudent;  
   
@@ -81,9 +83,9 @@ void SSTtest(){
     //     cout <<iter->first <<": " << iter->second <<endl;
     //     iter++;
     // }
-    for(uint64_t i = 0; i < 8; ++i){
+    for(uint64_t i = 0; i < max; ++i){
         bool flag;
-        cout << sst.GET(i, flag) << endl;
+        cout << i << sst.GET(i, flag) << endl;
     }
     // cout << sst.SEARCH(102) <<endl;
     // bool flag;
@@ -109,64 +111,81 @@ void SSTtest(){
     // }
 }
 
-void levelTest(){
-    map<uint64_t, string> mapStudent0;
-    map<uint64_t, string> mapStudent1;
-    map<uint64_t, string> mapStudent2;
-    map<uint64_t, string> mapStudent3;
+void levelTest(uint64_t max){
+    // map<uint64_t, string> mapStudent0;
+    // map<uint64_t, string> mapStudent1;
+    // map<uint64_t, string> mapStudent2;
+    // map<uint64_t, string> mapStudent3;
   
-    for(uint64_t i = 0; i < 300; ++i)
-        mapStudent0.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i))); 
+    // for(uint64_t i = 0; i < 300; ++i)
+    //     mapStudent0.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i))); 
 
-    for(uint64_t i = 200; i < 500; ++i)
-        mapStudent1.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i))); 
+    // for(uint64_t i = 200; i < 500; ++i)
+    //     mapStudent1.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i))); 
 
-    for(uint64_t i = 400; i < 500; ++i)
-        mapStudent2.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i))); 
+    // for(uint64_t i = 400; i < 500; ++i)
+    //     mapStudent2.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i))); 
 
-    for(uint64_t i = 600; i < 700; ++i)
-        mapStudent3.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i))); 
+    // for(uint64_t i = 600; i < 700; ++i)
+    //     mapStudent3.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i))); 
 
-    SSLevel lv("./data/C1", 1);
-    lv.WRITE_TO_SST(0, mapStudent0);
-    lv.WRITE_TO_SST(1, mapStudent1);
-    lv.WRITE_TO_SST(2, mapStudent2);
-    lv.WRITE_TO_SST(3, mapStudent3);
+    // SSLevel lv("./data/C1", 1);
+    // lv.WRITE_TO_SST(0, mapStudent0);
+    // lv.WRITE_TO_SST(1, mapStudent1);
+    // lv.WRITE_TO_SST(2, mapStudent2);
+    // lv.WRITE_TO_SST(3, mapStudent3);
 
-    bool flag;
-    for(uint64_t i = 0; i < 800; i += 20)
-        cout << i << ": " << lv.GET(i, flag) <<endl;
-    return;
+    // bool flag;
+    // for(uint64_t i = 0; i < 800; i += 20)
+    //     cout << i << ": " << lv.GET(i, flag) <<endl;
+
+    SSLevel ssl("./data/C0", 0);
+    // sst.WRITE_TO_DIR(mapStudent);
+    // MAP_DATA::iterator iter = mapStudent.begin();
+    // while(iter != mapStudent.end()){
+    //     cout <<iter->first <<": " << iter->second <<endl;
+    //     iter++;
+    // }
+    for(uint64_t i = 0; i < max; ++i){
+        bool flag;
+        cout << hex << i ;
+        cout << ssl.GET(i, flag) << endl;
+    }
 }
 
 void diskTest(){
-    map<uint64_t, string> mapStudent0;
-    map<uint64_t, string> mapStudent1;
-    map<uint64_t, string> mapStudent2;
-    map<uint64_t, string> mapStudent3;
+    // map<uint64_t, string> mapStudent0;
+    // map<uint64_t, string> mapStudent1;
+    // map<uint64_t, string> mapStudent2;
+    // map<uint64_t, string> mapStudent3;
   
-    for(uint64_t i = 0; i < 300; ++i)
-        mapStudent0.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i))); 
+    // for(uint64_t i = 0; i < 300; ++i)
+    //     mapStudent0.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i))); 
 
-    for(uint64_t i = 200; i < 500; ++i)
-        mapStudent1.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i))); 
+    // for(uint64_t i = 200; i < 500; ++i)
+    //     mapStudent1.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i))); 
 
-    for(uint64_t i = 400; i < 500; ++i)
-        mapStudent2.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i))); 
+    // for(uint64_t i = 400; i < 500; ++i)
+    //     mapStudent2.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i))); 
 
-    for(uint64_t i = 600; i < 700; ++i)
-        mapStudent3.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i)));
-    disk disc("./data", 5);
-    disc.WRITE_TO_SSL(2, mapStudent0);
-    disc.WRITE_TO_SSL(2, mapStudent1);
-    disc.WRITE_TO_SSL(2, mapStudent2);
-    disc.WRITE_TO_SSL(2, mapStudent3);
+    // for(uint64_t i = 600; i < 700; ++i)
+    //     mapStudent3.insert(pair<uint64_t, string>(i, "student_"+std::to_string(i)));
+    // disk disc("./data", 5);
+    // disc.WRITE_TO_SSL(2, mapStudent0);
+    // disc.WRITE_TO_SSL(2, mapStudent1);
+    // disc.WRITE_TO_SSL(2, mapStudent2);
+    // disc.WRITE_TO_SSL(2, mapStudent3);
 }
 
-void kvstoreTest(int max){
+void kvstoreTest(uint64_t max){
     KVStore store("./data");
     uint64_t i;
-    ofstream outf("log.txt", ios::out);
+    string expect;
+    string truth;
+    bool flag;
+    uint64_t count = 0;
+    // corectness test
+    // ofstream outf("log.txt", ios::out);
 
     // outf << "get 1" << ": " << store.get(1) <<endl;
 	// store.put(1, "SE");
@@ -175,26 +194,67 @@ void kvstoreTest(int max){
     // outf << "get 1" << ": " << store.get(1) <<endl;
     // outf << "del 1" << ": " << store.del(1) <<endl;
 
-	outf << "Test multiple key-value pairs\n";
-	for (i = 0; i < max; ++i) {
-	    store.put(i, std::string(i+1, 's'));
-		outf << "get " << i << ": " << store.get(i) <<endl;
-	}
+	// outf << "Test multiple key-value pairs\n";
+	// for (i = 0; i < max; ++i) {
+	//     store.put(i, std::string(i+1, 's'));
+	// 	outf << "get " << i << ": " << store.get(i) <<endl;
+	// }
 	
-	outf << "Test after all insertions\n";
-	for (i = 0; i < max; ++i)
-		outf <<"get" << i <<": "<<  store.get(i)<<endl;
+	// outf << "Test after all insertions\n";
+	// for (i = 0; i < max; ++i)
+	// 	outf <<"get" << i <<": "<<  store.get(i)<<endl;
 
-	outf << "Test deletions\n";
-	for (i = 0; i < max; i+=2)
-		outf << "del " << i << ": " << store.del(i) <<endl;
+	// outf << "Test deletions\n";
+	// for (i = 0; i < max; i+=2)
+	// 	outf << "del " << i << ": " << store.del(i) <<endl;
 
-	for (i = 0; i < max; ++i)
-		outf << "get " << i << ": " << store.get(i) <<endl;
+	// for (i = 0; i < max; ++i)
+	// 	outf << "get " << i << ": " << store.get(i) <<endl;
 
-	for (i = 1; i < max; ++i)
-		outf << "del " << i << ": " << store.del(i)<<endl;
-    outf.close();
+	// for (i = 1; i < max; ++i)
+	// 	outf << "del " << i << ": " << store.del(i)<<endl;
+
+    // outf.close();
+
+    // persistence test_test
+	for (i = 0; i < max; ++i) {
+		switch (i & 3) {
+			case 0:
+                expect = string(i+1, 't');
+                truth = store.get(i);
+                flag = (strcmp(truth.c_str(), expect.c_str()) == 0);
+				cout << i << " : " << flag << ":" <<endl;//<< truth << endl;
+                if(flag)
+                    count++;
+				break;
+			case 1:
+				expect = string(i+1, 't');
+                truth = store.get(i);
+                flag = (strcmp(truth.c_str(), expect.c_str()) == 0);
+				cout << i << " : " << flag << ":" <<endl;//<< truth << endl;
+                if(flag)
+                    count++;
+				break;
+			case 2:
+				expect = "";
+                truth = store.get(i);
+                flag = (strcmp(truth.c_str(), expect.c_str()) == 0);
+				cout << i << " : " << flag << ":" <<endl;//<< truth << endl;
+                if(flag)
+                    count++;
+				break;
+			case 3:
+				expect = string(i+1, 's');
+                truth = store.get(i);
+				cout << i << " : " << flag << ":" <<endl;//<< truth << endl;
+                if(flag)
+                    count++;
+				break;
+			default:
+				assert(0);
+		}
+	}
+    cout << "count : " << count <<endl;
 }
 
 int main(){
@@ -205,13 +265,13 @@ int main(){
 
     // memTableTest(300000);
 
-    SSTtest();
+    // SSTtest(1024 * 6);
 
-    // levelTest();
+    // levelTest(1024 * 4);
 
     // diskTest();
 
-    // kvstoreTest(2100);
+    // kvstoreTest(1024 * 4);
 
     cout << "test is finished ......" << endl;
     

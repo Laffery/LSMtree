@@ -12,18 +12,21 @@
 .
 ├── Makefile       // Makefile if you use GNU Make
 ├── README.md      // This readme file
-├── correctness.cc // Correctness test, you should not modify this file
+├── correctness.cc // Correctness test, do not modify this file
+├── correctness.cc // A compiled c-test whose parameter is 8096
 ├── data           // Data directory used in our test
-├── SkipList.hpp   // My implementation of a simple skip list
-├── MemTable.hpp   // My implementation of a memory table basing on skip list
-├── SSTable.hpp    // implementation of sstable
-├── SSLevel.hpp    // level of disk containing several sstables
-├── disk.hpp       // containing several sslevels
-├── platGround.cpp // my private field to test my codes
-├── kvstore.h      // your implementation
+├── SkipList.hpp   // A simple skip list
+├── MemTable.hpp   // A memory table based on skip list
+├── SSTable.hpp    // Implementation of sstable
+├── SSLevel.hpp    // Level of disk containing several sstables
+├── disk.hpp       // Containing several sslevels
+├── platGround.cpp // My private field to test my codes (ignore) 
+├── performance.cc // To test lsmtree's performanc
+├── kvstore.h      // Your implementation
 ├── kvstore_api.h  // KVStoreAPI, you should not modify this file
-├── persistence.cc // Persistence test, you should not modify this file
-└── test.h         // Base class for testing, you should not modify this file
+├── persistence.cc // Persistence test, do not modify this file
+├── persistence.exe// A compiled p-test whose parameter is 8096
+└── test.h         // Base class for testing, do not modify this file
 ```
 
 
